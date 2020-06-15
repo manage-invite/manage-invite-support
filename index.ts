@@ -89,6 +89,9 @@ client.on('message', (message) => {
                 );
                 break;
             case "5":
+                (client.channels.cache.get(config.contactChannel) as TextChannel).updateOverwrite(message.author, {
+                    VIEW_CHANNEL: true
+                });
                 sendAndDeleteAfter(
                     message,
                     `Hello ${message.author.toString()}, you now have access to the <#${config.contactChannel}> channel. You can click the :envelope: reaction to open a ticket!`
