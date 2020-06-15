@@ -30,19 +30,20 @@ client.on('ready', () => {
 
 interface MessageData {
     messageID: Snowflake;
-    deleteSelf: any;
-    deleteUser: any;
+    timeout: any;
 }
 const relatedMessages: Collection<Snowflake, MessageData> = new Collection();
 
 const sendAndDeleteAfter = (message: Message, content: string) => {
     message.channel.send(content).then((m) => {
-        const deleteSelfTimeout = setTimeout(() => m.delete(), 20000);
-        const deleteUserTimeout = setTimeout(() => message.delete(), 20000);
+        const timeout = setTimeout(() => {
+            relatedMessages.delete(message.id);
+            message.delete();
+            m.delete();
+        }, 20000);
         relatedMessages.set(message.id, {
             messageID: m.id,
-            deleteSelf: deleteSelfTimeout,
-            deleteUser: deleteUserTimeout
+            timeout
         });
     });
 };
@@ -52,8 +53,7 @@ client.on('messageDelete', (message) => {
     if(relatedMessageData){
         channel.messages.fetch(relatedMessageData.messageID).then((m) => {
             m.delete();
-            clearTimeout(relatedMessageData.deleteSelf);
-            clearTimeout(relatedMessageData.deleteUser);
+            clearTimeout(relatedMessageData.timeout);
             relatedMessages.delete(message.id);
         });
     }
