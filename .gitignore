@@ -8,3 +8,6 @@ index.d.ts
 
 # Config
 config.json
+
+# IDE
+.vscode
