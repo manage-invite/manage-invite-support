@@ -1,0 +1,10 @@
+# Node
+package-lock.json
+node_modules/
+
+# Compiled files
+index.js
+index.d.ts
+
+# Config
+config.json
