@@ -20,11 +20,17 @@ const content =
 client.on('ready', () => {
     console.log(`Ready. Logged as ${client.user.tag}.`);
     channel = client.channels.cache.get(config.supportChannel) as TextChannel;
-    channel.messages.fetch().then((messages) => {
-        initialMessageID = messages.first()?.id;
+    channel.messages.fetch().then(async (messages) => {
+        initialMessageID = messages.last()?.id;
         if(!initialMessageID){
-            channel.send(content)
+            initialMessageID = (await channel.send(content)).id;
         }
+        setInterval(() => {
+            channel.messages.fetch().then((fetchedMessages) => {
+                const messagesToDelete = fetchedMessages.filter((m) => (Date.now() - m.createdTimestamp) > 20000 && m.id !== initialMessageID);
+                channel.bulkDelete(messagesToDelete);
+            });
+        }, 10000);
     });
 });
 
