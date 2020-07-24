@@ -27,7 +27,7 @@ client.on('ready', () => {
         }
         setInterval(() => {
             channel.messages.fetch().then((fetchedMessages) => {
-                const messagesToDelete = fetchedMessages.filter((m) => (Date.now() - m.createdTimestamp) > 20000 && m.id !== initialMessageID);
+                const messagesToDelete = fetchedMessages.filter((m) => (Date.now() - m.createdTimestamp) > 60000 && m.id !== initialMessageID);
                 channel.bulkDelete(messagesToDelete);
             });
         }, 10000);
@@ -46,7 +46,7 @@ const sendAndDeleteAfter = (message: Message, content: string) => {
             relatedMessages.delete(message.id);
             message.delete();
             m.delete();
-        }, 20000);
+        }, 60000);
         relatedMessages.set(message.id, {
             messageID: m.id,
             timeout
