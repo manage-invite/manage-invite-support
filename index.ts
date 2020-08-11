@@ -35,18 +35,19 @@ client.on('ready', async () => {
             });
         }, 10000);
     });
+    const ticketsNotResolved: TextChannel[] = [];
     for(const ticketChannelID of channel.guild.channels.cache.filter((channel) => channel.name.includes('ticket-') && channel.type === 'text').map((channel) => channel.id)){
         const ticketChannel = client.channels.cache.get(ticketChannelID) as TextChannel;
         const messages = await ticketChannel.messages.fetch();
         const creationMessage = messages.find((message) => message.author.id === ticketToolID && message.embeds.length > 0 && message.content && message.content.includes('Welcome'));
-        if(creationMessage){
-            const userID = creationMessage.mentions.users.first().id;
-            if(userID){
-                usersTicketChannels.set(userID, ticketChannelID);
-            }
+        const userID = creationMessage?.mentions.users.first().id;
+        if(creationMessage && userID){
+            usersTicketChannels.set(userID, ticketChannelID);
+        } else {
+            ticketsNotResolved.push(ticketChannel);
         }
     }
-    console.log(`${usersTicketChannels.size} ticket channels resolved.`);
+    console.log(`\n${usersTicketChannels.size} ticket channels resolved. (missing ${ticketsNotResolved.map((channel) => `#${channel.name}`).join(' | ')})`);
 });
 
 interface MessageData {
