@@ -1,8 +1,9 @@
-import { Client, TextChannel, Snowflake, Message, Collection } from 'discord.js';
+import { Client, TextChannel, Snowflake, Message, Collection, GuildMember } from 'discord.js';
 import * as config from './config.json';
 
 const client = new Client({
-    partials: [ "MESSAGE" ]
+    partials: [ "MESSAGE" ],
+    fetchAllMembers: true
 });
 
 let channel: TextChannel = null;
@@ -16,8 +17,9 @@ const content =
 \`3\` - I want to know how to use the bot
 \`4\` - ManageInvite says my server needs to be upgraded
 \`5\` - My problem is not in the list`;
-const ticketToolID = '557628352828014614';
 
+const hasLeftWarningMessage = ':warning: Le membre qui a ouvert le ticket vient de quitter le serveur, le ticket peut donc probablement être fermé !';
+const ticketToolID = '557628352828014614';
 const usersTicketChannels = new Collection<Snowflake, Snowflake>();
 
 client.on('ready', async () => {
@@ -41,10 +43,14 @@ client.on('ready', async () => {
         const messages = await ticketChannel.messages.fetch();
         const creationMessage = messages.find((message) => message.author.id === ticketToolID && message.embeds.length > 0 && message.content && message.content.includes('Welcome'));
         const userID = creationMessage?.mentions.users.first().id;
+        const hasLeft = !ticketChannel.guild.members.cache.has(userID);
         if(creationMessage && userID){
             usersTicketChannels.set(userID, ticketChannelID);
         } else {
             ticketsNotResolved.push(ticketChannel);
+        }
+        if(hasLeft && !messages.some((message) => message.content === hasLeftWarningMessage)){
+            client.emit('guildMemberRemove', { id: userID } as GuildMember);
         }
     }
     console.log(`\n${usersTicketChannels.size} ticket channels resolved. (missing ${ticketsNotResolved.map((channel) => `#${channel.name}`).join(' | ')})`);
@@ -125,6 +131,21 @@ client.on('message', (message) => {
                     `Hello, ${message.author.toString()}, you must type a valid number corresponding to the issue you are experiencing.`
                 );
         }
+    }
+});
+
+client.on('channelDelete', (channel) => {
+    const userID = usersTicketChannels.findKey((channelID) => channelID === channel.id);
+    if(userID){
+        usersTicketChannels.delete(userID);
+    }
+});
+
+client.on('guildMemberRemove', async (member) => {
+    const ticketChannelID = usersTicketChannels.get(member.id);
+    const ticketChannel = client.channels.cache.get(ticketChannelID) as TextChannel;
+    if(ticketChannel){
+        ticketChannel.send(hasLeftWarningMessage);
     }
 });
 
