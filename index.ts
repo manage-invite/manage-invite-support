@@ -16,8 +16,11 @@ const content =
 \`3\` - I want to know how to use the bot
 \`4\` - ManageInvite says my server needs to be upgraded
 \`5\` - My problem is not in the list`;
+const ticketToolID = '557628352828014614';
 
-client.on('ready', () => {
+const usersTicketChannels = new Collection<Snowflake, Snowflake>();
+
+client.on('ready', async () => {
     console.log(`Ready. Logged as ${client.user.tag}.`);
     channel = client.channels.cache.get(config.supportChannel) as TextChannel;
     channel.messages.fetch().then(async (messages) => {
@@ -32,6 +35,18 @@ client.on('ready', () => {
             });
         }, 10000);
     });
+    for(const ticketChannelID of channel.guild.channels.cache.filter((channel) => channel.name.includes('ticket-') && channel.type === 'text').map((channel) => channel.id)){
+        const ticketChannel = client.channels.cache.get(ticketChannelID) as TextChannel;
+        const messages = await ticketChannel.messages.fetch();
+        const creationMessage = messages.find((message) => message.author.id === ticketToolID && message.embeds.length > 0 && message.content && message.content.includes('Welcome'));
+        if(creationMessage){
+            const userID = creationMessage.mentions.users.first().id;
+            if(userID){
+                usersTicketChannels.set(userID, ticketChannelID);
+            }
+        }
+    }
+    console.log(`${usersTicketChannels.size} ticket channels resolved.`);
 });
 
 interface MessageData {
