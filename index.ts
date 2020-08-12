@@ -1,6 +1,8 @@
 import { Client, TextChannel, Snowflake, Message, Collection, GuildMember } from 'discord.js';
 import * as config from './config.json';
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const client = new Client({
     partials: [ "MESSAGE" ],
     fetchAllMembers: true
@@ -131,6 +133,22 @@ client.on('message', (message) => {
                     `Hello, ${message.author.toString()}, you must type a valid number corresponding to the issue you are experiencing.`
                 );
         }
+    }
+});
+
+client.on('channelCreate', async (channel) => {
+    if(channel.type !== 'text') return;
+    const createdChannel = channel as TextChannel;
+    if(!createdChannel.name.includes('ticket-')) return;
+    await delay(5000);
+    const creationMessage = createdChannel.messages.cache.find((message) => message.author.id === ticketToolID && message.embeds.length > 0 && message.content && message.content.includes('Welcome'));
+    const userID = creationMessage?.mentions.users.first().id;
+    const hasLeft = !createdChannel.guild.members.cache.has(userID);
+    if(creationMessage && userID){
+        usersTicketChannels.set(userID, createdChannel.id);
+    }
+    if(hasLeft && !createdChannel.messages.cache.some((message) => message.content === hasLeftWarningMessage)){
+        client.emit('guildMemberRemove', { id: userID } as GuildMember);
     }
 });
 
