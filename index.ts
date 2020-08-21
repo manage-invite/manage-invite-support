@@ -133,7 +133,11 @@ client.on('message', (message) => {
                     `Hello, ${message.author.toString()}, you must type a valid number corresponding to the issue you are experiencing.`
                 );
         }
-    } else if(/(discord\.(gg|io|me|li)\/.+|(discord|discordapp)\.com\/invite\/.+)/i.test(message.content) && !(message.channel as TextChannel).name.startsWith("ticket-")){
+    } else if(
+        (/(discord\.(gg|io|me|li)\/.+|(discord|discordapp)\.com\/invite\/.+)/i.test(message.content))
+        && !((message.channel as TextChannel).name.startsWith("ticket-"))
+        && !(message.member.hasPermission("MANAGE_MESSAGES"))
+    ){
         message.delete();
         message.reply("you are not able to send server invites.").then((m) => {
             m.delete({
