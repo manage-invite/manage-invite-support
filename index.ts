@@ -20,7 +20,7 @@ const content =
 \`4\` - ManageInvite says my server needs to be upgraded
 \`5\` - My problem is not in the list`;
 
-const hasLeftWarningMessage = ':warning: Le membre qui a ouvert le ticket vient de quitter le serveur, le ticket peut donc probablement être fermé !';
+const hasLeftWarningMessage = ':warning: The member who opened the ticket has just left the server, so the ticket can probably be closed!';
 const ticketToolID = '557628352828014614';
 const usersTicketChannels = new Collection<Snowflake, Snowflake>();
 
