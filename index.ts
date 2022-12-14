@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 config();
 
-import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, IntentsBitField } from 'discord.js';
+import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, IntentsBitField, PermissionsBitField } from 'discord.js';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -9,8 +9,8 @@ const client = new Client({
     intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages]
 });
 
-let channel: TextChannel = null;
-let initialMessageID: Snowflake = null;
+let channel: TextChannel|null = null;
+let initialMessageID: Snowflake|null = null;
 
 const content = 
 `**Type the number of the problem you're experiencing and I'll do my best to help you!**
@@ -26,17 +26,17 @@ const ticketToolID = '557628352828014614';
 const usersTicketChannels = new Collection<Snowflake, Snowflake>();
 
 client.on('ready', async () => {
-    console.log(`Ready. Logged as ${client.user.tag}.`);
-    channel = client.channels.cache.get(process.env.SUPPORT_CHANNEL_ID) as TextChannel;
+    console.log(`Ready. Logged as ${client.user!.tag}.`);
+    channel = client.channels.cache.get(process.env.SUPPORT_CHANNEL_ID!) as TextChannel;
     channel.messages.fetch().then(async (messages) => {
-        initialMessageID = messages.last()?.id;
+        initialMessageID = messages.last()?.id!;
         if(!initialMessageID){
-            initialMessageID = (await channel.send(content)).id;
+            initialMessageID = (await channel!.send(content)).id;
         }
         setInterval(() => {
-            channel.messages.fetch().then((fetchedMessages) => {
+            channel!.messages.fetch().then((fetchedMessages) => {
                 const messagesToDelete = fetchedMessages.filter((m) => (Date.now() - m.createdTimestamp) > 60000 && m.id !== initialMessageID);
-                channel.bulkDelete(messagesToDelete);
+                channel!.bulkDelete(messagesToDelete);
             });
         }, 10000);
     });
@@ -45,8 +45,8 @@ client.on('ready', async () => {
         const ticketChannel = client.channels.cache.get(ticketChannelID) as TextChannel;
         const messages = await ticketChannel.messages.fetch();
         const creationMessage = messages.find((message) => message.author.id === ticketToolID && message.embeds.length > 0 && message.content && message.content.includes('Welcome'));
-        const userID = creationMessage?.mentions.users.first().id;
-        const hasLeft = !ticketChannel.guild.members.cache.has(userID);
+        const userID = creationMessage?.mentions.users.first()!.id;
+        const hasLeft = !ticketChannel.guild.members.cache.has(userID!);
         if(creationMessage && userID){
             usersTicketChannels.set(userID, ticketChannelID);
         } else {
@@ -82,7 +82,7 @@ const sendAndDeleteAfter = (message: Message, content: string) => {
 client.on('messageDelete', (message) => {
     const relatedMessageData = relatedMessages.get(message.id);
     if(relatedMessageData){
-        channel.messages.fetch(relatedMessageData.messageID).then((m) => {
+        channel!.messages.fetch(relatedMessageData.messageID).then((m) => {
             m.delete();
             clearTimeout(relatedMessageData.timeout);
             relatedMessages.delete(message.id);
@@ -90,7 +90,7 @@ client.on('messageDelete', (message) => {
     }
 })
 
-client.on('message', (message) => {
+client.on('messageCreate', (message) => {
     if(message.partial) return;
     if(message.author.bot) return;
     if(message.channel.id === process.env.SUPPORT_CHANNEL_ID){
@@ -120,7 +120,7 @@ client.on('message', (message) => {
                 );
                 break;
             case "5":
-                (client.channels.cache.get(process.env.CONTACT_CHANNEL_ID) as TextChannel).permissionOverwrites.edit(message.author, {
+                (client.channels.cache.get(process.env.CONTACT_CHANNEL_ID!) as TextChannel).permissionOverwrites.edit(message.author, {
                     ViewChannel: true
                 });
                 sendAndDeleteAfter(
@@ -137,12 +137,14 @@ client.on('message', (message) => {
     } else if(
         (/(discord\.(gg|io|me|li)\/.+|(discord|discordapp)\.com\/invite\/.+)/i.test(message.content))
         && !((message.channel as TextChannel).name.startsWith("ticket-"))
-        && !(message.member.hasPermission("MANAGE_MESSAGES"))
+        && !(message.member!.permissions.has(PermissionsBitField.Flags.ManageMessages))
     ){
         message.delete();
         message.reply("you are not able to send server invites.").then((m) => {
-            m.delete({
-                timeout: 5000
+            m.delete().then(() => {
+                setTimeout(() => {
+                    message.delete();
+                }, 5000);
             });
         });
     }
@@ -154,8 +156,8 @@ client.on('channelCreate', async (channel) => {
     if(!createdChannel.name.includes('ticket-')) return;
     await delay(5000);
     const creationMessage = createdChannel.messages.cache.find((message) => message.author.id === ticketToolID && message.embeds.length > 0 && message.content && message.content.includes('Welcome'));
-    const userID = creationMessage?.mentions.users.first().id;
-    const hasLeft = !createdChannel.guild.members.cache.has(userID);
+    const userID = creationMessage?.mentions.users.first()!.id;
+    const hasLeft = !createdChannel.guild.members.cache.has(userID!);
     if(creationMessage && userID){
         usersTicketChannels.set(userID, createdChannel.id);
     }
@@ -172,7 +174,7 @@ client.on('channelDelete', (channel) => {
 });
 
 client.on('guildMemberRemove', async (member) => {
-    const ticketChannelID = usersTicketChannels.get(member.id);
+    const ticketChannelID = usersTicketChannels.get(member.id) as Snowflake;
     const ticketChannel = client.channels.cache.get(ticketChannelID) as TextChannel;
     if(ticketChannel){
         ticketChannel.send(hasLeftWarningMessage);
