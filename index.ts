@@ -6,7 +6,7 @@ import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, Inten
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const client = new Client({
-    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.GuildMembers]
+    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.GuildMembers, IntentsBitField.Flags.MessageContent],
 });
 
 let channel: TextChannel|null = null;
