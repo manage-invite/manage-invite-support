@@ -99,19 +99,19 @@ client.on('messageCreate', (message) => {
             case "1":
                 sendAndDeleteAfter(
                     message,
-                    `Hello ${message.author.toString()}, you can configure join messages, leave messages or join messages in direct messages by using the dashboard: **<https://dash.manage-invite.xyz/>** (recommended) or the \`+configjoin\`, \`+configleave\` and \`+configdmjoin\` commands.`
+                    `Hello ${message.author.toString()}, you can configure join messages, leave messages or join messages in direct messages by using the dashboard: **<https://manage-invite.xyz/>** (recommended) or the \`/configjoin\`, \`/configleave\` and \`/configdmjoin\` commands.`
                 );
                 break;
             case "2":
                 sendAndDeleteAfter(
                     message,
-                    `Hello ${message.author.toString()}, you can access the web dashboard by using this link: **<https://dash.manage-invite.xyz>**.`
+                    `Hello ${message.author.toString()}, you can access the web dashboard by using this link: **<https://manage-invite.xyz>**.`
                 );
                 break;
             case "3":
                 sendAndDeleteAfter(
                     message,
-                    `Hello ${message.author.toString()}, to get the list of all the commands, you can run the \`+help\` command.\nYou can also type \`1\` to know how to configure the bot!`
+                    `Hello ${message.author.toString()}, to get the list of all the commands, you can start typing \`/\` and click on ManageInvite.\nYou can also type \`1\` to know how to configure the bot!`
                 );
                 break;
             case "4":
