@@ -7,7 +7,7 @@ index.js
 index.d.ts
 
 # Config
-config.json
+.env
 
 # IDE
 .vscode

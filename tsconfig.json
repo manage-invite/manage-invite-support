@@ -1,11 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES5",
-        "module": "commonjs",
-        "declaration": true,
-        "strict": true,
-        "strictNullChecks": false,
-        "resolveJsonModule": true
+        "target": "es2020"
     },
     "files": [
         "index.ts"

@@ -1,5 +1,7 @@
+import { config } from 'dotenv';
+config();
+
 import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, IntentsBitField } from 'discord.js';
-import * as config from './config.json';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -25,7 +27,7 @@ const usersTicketChannels = new Collection<Snowflake, Snowflake>();
 
 client.on('ready', async () => {
     console.log(`Ready. Logged as ${client.user.tag}.`);
-    channel = client.channels.cache.get(config.supportChannel) as TextChannel;
+    channel = client.channels.cache.get(process.env.SUPPORT_CHANNEL_ID) as TextChannel;
     channel.messages.fetch().then(async (messages) => {
         initialMessageID = messages.last()?.id;
         if(!initialMessageID){
@@ -91,7 +93,7 @@ client.on('messageDelete', (message) => {
 client.on('message', (message) => {
     if(message.partial) return;
     if(message.author.bot) return;
-    if(message.channel.id === config.supportChannel){
+    if(message.channel.id === process.env.SUPPORT_CHANNEL_ID){
         switch(message.content){
             case "1":
                 sendAndDeleteAfter(
@@ -114,16 +116,16 @@ client.on('message', (message) => {
             case "4":
                 sendAndDeleteAfter(
                     message,
-                    `Hello ${message.author.toString()}, this is because you didn't buy ManageInvite. Indeed, our services are no longer free, to keep a good speed and uptime for users who really need a stable bot. Nevertheless, we want ManageInvite to remain accessible to all, that's why the price has been lowered from $5 to $2 per month. You want to try the bot? Ask for a 7-day trial period in <#${config.trialTickets}>! It's totally free, just send the link to your server.`,
+                    `Hello ${message.author.toString()}, this is because you didn't buy ManageInvite. Indeed, our services are no longer free, to keep a good speed and uptime for users who really need a stable bot. Nevertheless, we want ManageInvite to remain accessible to all, that's why the price has been lowered from $5 to $2 per month. You want to try the bot? Ask for a 7-day trial period in <#${process.env.TRIAL_CHANNEL_ID}>! It's totally free, just send the link to your server.`,
                 );
                 break;
             case "5":
-                (client.channels.cache.get(config.contactChannel) as TextChannel).permissionOverwrites.edit(message.author, {
+                (client.channels.cache.get(process.env.CONTACT_CHANNEL_ID) as TextChannel).permissionOverwrites.edit(message.author, {
                     ViewChannel: true
                 });
                 sendAndDeleteAfter(
                     message,
-                    `Hello ${message.author.toString()}, you now have access to the <#${config.contactChannel}> channel. You can click the :envelope: reaction to open a ticket!`
+                    `Hello ${message.author.toString()}, you now have access to the <#${process.env.CONTACT_CHANNEL_ID}> channel. You can click the :envelope: reaction to open a ticket!`
                 );
                 break;
             default:
@@ -177,4 +179,4 @@ client.on('guildMemberRemove', async (member) => {
     }
 });
 
-client.login(config.token);
+client.login(process.env.TOKEN);
