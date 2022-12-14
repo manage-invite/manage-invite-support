@@ -6,7 +6,7 @@ import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, Inten
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const client = new Client({
-    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages]
+    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.GuildMembers]
 });
 
 let channel: TextChannel|null = null;
@@ -28,6 +28,7 @@ const usersTicketChannels = new Collection<Snowflake, Snowflake>();
 client.on('ready', async () => {
     console.log(`Ready. Logged as ${client.user!.tag}.`);
     channel = client.channels.cache.get(process.env.SUPPORT_CHANNEL_ID!) as TextChannel;
+    await channel.guild.members.fetch();
     channel.messages.fetch().then(async (messages) => {
         initialMessageID = messages.last()?.id!;
         if(!initialMessageID){
