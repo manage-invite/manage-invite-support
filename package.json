@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Support Discord bot for the ManageInvite's Lounge server",
   "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "tsc"
+  },
   "author": "Androz2091 <androz2091@gmail.com>",
   "license": "MIT",
   "devDependencies": {
