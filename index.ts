@@ -1,11 +1,10 @@
-import { Client, TextChannel, Snowflake, Message, Collection, GuildMember } from 'discord.js';
+import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, IntentsBitField } from 'discord.js';
 import * as config from './config.json';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const client = new Client({
-    partials: [ "MESSAGE" ],
-    fetchAllMembers: true
+    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages]
 });
 
 let channel: TextChannel = null;
@@ -40,7 +39,7 @@ client.on('ready', async () => {
         }, 10000);
     });
     const ticketsNotResolved: TextChannel[] = [];
-    for(const ticketChannelID of channel.guild.channels.cache.filter((channel) => channel.name.includes('ticket-') && channel.type === 'text').map((channel) => channel.id)){
+    for(const ticketChannelID of channel.guild.channels.cache.filter((channel) => channel.name.includes('ticket-') && channel.isTextBased()).map((channel) => channel.id)){
         const ticketChannel = client.channels.cache.get(ticketChannelID) as TextChannel;
         const messages = await ticketChannel.messages.fetch();
         const creationMessage = messages.find((message) => message.author.id === ticketToolID && message.embeds.length > 0 && message.content && message.content.includes('Welcome'));
@@ -119,8 +118,8 @@ client.on('message', (message) => {
                 );
                 break;
             case "5":
-                (client.channels.cache.get(config.contactChannel) as TextChannel).updateOverwrite(message.author, {
-                    VIEW_CHANNEL: true
+                (client.channels.cache.get(config.contactChannel) as TextChannel).permissionOverwrites.edit(message.author, {
+                    ViewChannel: true
                 });
                 sendAndDeleteAfter(
                     message,
@@ -148,7 +147,7 @@ client.on('message', (message) => {
 });
 
 client.on('channelCreate', async (channel) => {
-    if(channel.type !== 'text') return;
+    if(!channel.isTextBased()) return;
     const createdChannel = channel as TextChannel;
     if(!createdChannel.name.includes('ticket-')) return;
     await delay(5000);
