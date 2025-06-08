@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 config();
 
-import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, IntentsBitField, PermissionsBitField } from 'discord.js';
+import { Client, TextChannel, Snowflake, Message, Collection, GuildMember, PermissionsBitField, IntentsBitField } from 'discord.js';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -67,7 +67,7 @@ interface MessageData {
 const relatedMessages: Collection<Snowflake, MessageData> = new Collection();
 
 const sendAndDeleteAfter = (message: Message, content: string) => {
-    message.channel.send(content).then((m) => {
+    (message.channel as TextChannel).send(content).then((m) => {
         const timeout = setTimeout(() => {
             relatedMessages.delete(message.id);
             message.delete();
